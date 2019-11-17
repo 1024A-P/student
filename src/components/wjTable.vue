@@ -1,6 +1,7 @@
 <template>
   <div class="wj-table">
     <el-table
+      v-loading="tableData.isloading"
       :data="tableData.list"
       style="width:100%;margin-bottom:15px;">
       <slot></slot>
@@ -16,6 +17,7 @@
         layout="prev, pager, next"
         :total="tableData.total"
         :page-size="tableData.size"
+        :current-page="tableData.page"
         @current-change="pageChange">
       </el-pagination>
     </div>
@@ -57,7 +59,7 @@ export default {
 </style>
 <style lang="scss">
 .el-table thead{
-  color:rgba(51, 176, 253, 0.699);
+  color:rgba(51, 176, 253, 0.699)!important;
 }
 .el-pager li{
   font-size:12px;

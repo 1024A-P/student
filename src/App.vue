@@ -1,14 +1,23 @@
 <template>
   <div id="app">
-    <wj-header></wj-header>
-    <router-view/>
-    <wj-footer></wj-footer>
+    <wj-login v-if="setLogin"></wj-login>
+    <wj-header v-if="!setLogin"></wj-header>
+    <router-view v-if="!setLogin"></router-view>
+    <wj-footer v-if="!setLogin"></wj-footer>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  data () {
+    return {
+      setLogin: true
+    }
+  },
+  mounted () {
+    if (sessionStorage.studentInfo) this.setLogin = false
+  }
 }
 </script>
 

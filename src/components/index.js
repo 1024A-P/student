@@ -6,6 +6,8 @@
 import Header from './wjHeader.vue'
 import Footer from './wjFooter.vue'
 import Table from './wjTable.vue'
+import Login from './wjLogin.vue'
+import StudentBlock from './wjStudentBlock.vue'
 // import LeftHeader from './wjLeftHeader.vue'
 // import Input from './wjInput.vue'
 // import Select from './wjSelect.vue'
@@ -15,7 +17,9 @@ import Table from './wjTable.vue'
 const components = [
   Header,
   Footer,
-  Table
+  Table,
+  Login,
+  StudentBlock
   // LeftHeader,
   // Input,
   // Select,

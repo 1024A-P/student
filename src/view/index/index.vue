@@ -7,45 +7,49 @@
       </el-carousel-item>
     </el-carousel>
     <!-- 主体 -->
-    <div class="body-content">
-      <div class="content-block">
-        <div class="block-title">在线考试</div>
-        <div class="el-icon-monitor block-tuan"></div>
-        <div class="block-sm">
-          我们提供了在线考试系统方便考生在线考试
+    <div class="body-content-main">
+      <!-- 悬浮信息块 -->
+      <wj-student-block></wj-student-block>
+      <div class="body-content">
+        <div class="content-block" @click="jumpRoute(2)">
+          <div class="block-title">在线考试</div>
+          <div class="el-icon-monitor block-tuan"></div>
+          <div class="block-sm">
+            我们提供了在线考试系统方便考生在线考试
+          </div>
+          <div class="block-line">
+            <div class="block-inline-line"></div>
+          </div>
         </div>
-        <div class="block-line">
-          <div class="block-inline-line"></div>
+        <div class="content-block" @click="jumpRoute(3)">
+          <div class="block-title">成绩查询</div>
+          <div class="el-icon-search block-tuan"></div>
+          <div class="block-sm">
+            当考完试后，我们提供了在线查询成绩服务
+          </div>
+          <div class="block-line">
+            <div class="block-inline-line"></div>
+          </div>
         </div>
-      </div>
-      <div class="content-block">
-        <div class="block-title">成绩查询</div>
-        <div class="el-icon-search block-tuan"></div>
-        <div class="block-sm">
-          当考完试后，我们提供了在线查询成绩服务
+        <div class="content-block" @click="jumpRoute(4)">
+          <div class="block-title">个人中心</div>
+          <div class="el-icon-user block-tuan"></div>
+          <div class="block-sm">
+            这是让你修改你的个人信息
+          </div>
+          <div class="block-line">
+            <div class="block-inline-line"></div>
+          </div>
         </div>
-        <div class="block-line">
-          <div class="block-inline-line"></div>
-        </div>
-      </div>
-      <div class="content-block">
-        <div class="block-title">个人中心</div>
-        <div class="el-icon-user block-tuan"></div>
-        <div class="block-sm">
-          这是让你修改你的个人信息
-        </div>
-        <div class="block-line">
-          <div class="block-inline-line"></div>
-        </div>
-      </div>
-      <div class="content-block">
-        <div class="block-title">关于</div>
-        <div class="el-icon-postcard block-tuan"></div>
-        <div class="block-sm">
-          可以让你了解到我们该系统的业务
-        </div>
-        <div class="block-line">
-          <div class="block-inline-line"></div>
+        <div class="content-block" @click="jumpRoute(5)">
+          <div class="block-title">关于</div>
+          <div class="el-icon-postcard block-tuan"></div>
+          <div class="block-sm">
+            可以让你了解到我们该系统的业务
+          </div>
+          <div class="block-line">
+            <div class="block-inline-line"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -68,26 +72,26 @@
               <el-form-item
                 label="你的姓名"
                 :rules="[{ required: true, message: '请输入你的姓名', trigger: 'blur' }]">
-                <el-input v-model="sugForm.name"></el-input>
+                <el-input v-model="sugForm.name" placeholder="请输入你的姓名"></el-input>
               </el-form-item>
               <el-form-item
                 label="所在专业"
                 :rules="[{ required: true, message: '请输入你的所在专业', trigger: 'blur' }]">
-                <el-input v-model="sugForm.major"></el-input>
+                <el-input v-model="sugForm.major" placeholder="请输入你的所在专业"></el-input>
               </el-form-item>
               <el-form-item
                 label="所在班级"
                 :rules="[{ required: true, message: '请输入你的所在班级', trigger: 'blur' }]">
-                <el-input v-model="sugForm.class"></el-input>
+                <el-input v-model="sugForm.class" placeholder="请输入你的所在班级"></el-input>
               </el-form-item>
               <el-form-item
                 label="需改进的地方"
                 :rules="[{ required: true, message: '请输入改进意见', trigger: 'blur' }]">
-                <el-input type="textarea" rows="8" resize="none" v-model="sugForm.suggest"></el-input>
+                <el-input type="textarea" rows="8" resize="none" v-model="sugForm.content" placeholder="请输入你对该系统的改进意见"></el-input>
               </el-form-item>
               <el-form-item style="text-align:left">
-                <el-button plain>重置</el-button>
-                <el-button type="primary">提交</el-button>
+                <el-button plain @click="clearForm">重置</el-button>
+                <el-button type="primary" @click="clickSubmit">提交</el-button>
               </el-form-item>
             </el-form>
           </div>
@@ -112,8 +116,54 @@ export default {
         name: '',
         major: '',
         class: '',
-        suggest: ''
+        content: '',
+        maker: '',
+        makerId: 0,
+        createTime: ''
+      },
+      studentInfo: {}
+    }
+  },
+  methods: {
+    jumpRoute (to) {
+      this.$root.eventHandle.$emit('INDEX_CLICK', to)
+    },
+    // 点击提交
+    clickSubmit () {
+      this.$confirm('确定提交改进意见吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.submitSuggest()
+      }).catch(() => {
+        console.log('取消提交')
+      })
+    },
+    // 确定提交建议
+    submitSuggest () {
+      if (sessionStorage.studentInfo) {
+        this.studentInfo = JSON.parse(sessionStorage.studentInfo)
       }
+      this.sugForm.maker = this.studentInfo.name
+      this.sugForm.makerId = this.studentInfo.id
+      this.sugForm.createTime = this.$utils.getFormatDate()
+      let data = this.sugForm
+      this.$http.post('/studentApi/student/submitSuggest', data).then(res => {
+        if (res.body.msg === 'success') {
+          this.$message.success('恭喜你！已提交改进意见')
+          this.clearForm()
+        } else {
+          this.$message.error('未知错误！提交改进意见失败')
+        }
+      })
+    },
+    // 清除数据
+    clearForm () {
+      this.sugForm.name = ''
+      this.sugForm.major = ''
+      this.sugForm.class = ''
+      this.sugForm.content = ''
     }
   }
 }
@@ -136,11 +186,18 @@ export default {
   width:100%;
   height:100%;
 }
+.body-content-main{
+  width:100%;
+  height:480px;
+  overflow:hidden;
+  position: relative;
+}
 .body-content{
   width:1200px;
   // background:skyblue;
   margin:120px auto;
   display:flex;
+  position: relative;
 }
 .content-block{
   flex:1;

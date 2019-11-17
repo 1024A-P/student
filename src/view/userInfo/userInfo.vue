@@ -1,8 +1,8 @@
 <template>
   <div class="user-info">
-    <div class="line-title">
-      <div class="title-position">欢迎你！陈大叔同学</div>
-    </div>
+    <!-- <div class="line-title">
+      <div class="title-position">欢迎你！{{loginInfo.name}}同学</div>
+    </div> -->
     <div class="form-position">
       <div class="user-info-form">
         <el-form :model="userForm" status-icon ref="ruleForm" label-width="84px" label-position="right">
@@ -19,23 +19,28 @@
             </el-radio-group>
           </el-form-item>
           <el-form-item label="生日：" prop="pass">
-            <el-input v-model="userForm.birth"></el-input>
+            <!-- <el-input v-model="userForm.birth" placeholder="请选择生日日期"></el-input> -->
+            <el-date-picker
+              v-model="dateTime"
+              type="date"
+              placeholder="请选择你的生日">
+            </el-date-picker>
           </el-form-item>
           <el-form-item label="手机：" prop="pass">
-            <el-input v-model="userForm.phone"></el-input>
+            <el-input v-model="userForm.phone" placeholder="请输入你的手机号码"></el-input>
           </el-form-item>
           <el-form-item label="QQ：" prop="pass">
-            <el-input v-model="userForm.qq"></el-input>
+            <el-input v-model="userForm.qq" placeholder="请输入你的qq号码"></el-input>
           </el-form-item>
           <el-form-item label="qq邮箱：" prop="pass">
-            <el-input v-model="userForm.email"></el-input>
+            <el-input v-model="userForm.email" placeholder="请输入你的qq邮箱"></el-input>
           </el-form-item>
           <el-form-item label="现居地址：" prop="pass">
-            <el-input v-model="userForm.address"></el-input>
+            <el-input type="textarea" :rows="3" resize="none" v-model="userForm.address" placeholder="请输入你的现居地址"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary">确定修改</el-button>
-            <el-button>重置</el-button>
+            <el-button type="primary" @click="certainClick">确定修改</el-button>
+            <el-button @click="setBeginInfo">重置</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -48,19 +53,74 @@ export default {
   data () {
     return {
       userForm: {
-        name: '陈大叔',
-        password: '1023032504',
-        sex: '1',
-        birth: '1997-10-24',
-        phone: '17612047283',
-        qq: '1023032504',
-        email: '1023032504@qq.com',
-        address: '广东省广州市天河区广汕一路221号'
-      }
+        id: 0,
+        name: '',
+        password: '',
+        sex: '',
+        birth: '',
+        phone: '',
+        qq: '',
+        email: '',
+        address: ''
+      },
+      loginInfo: {},
+      beginData: {},
+      dateTime: ''
     }
   },
   methods: {
-
+    // 获取学生个人信息
+    getStudentInfo () {
+      let data = this.loginInfo
+      this.$http.post('/studentApi/student/getStudentInfo', data).then(res => {
+        if (res.body.msg === 'success') {
+          this.userForm = res.body.data[0]
+          this.beginData = JSON.parse(JSON.stringify(res.body.data[0]))
+          this.dateTime = res.body.data[0].birth
+        } else {
+          console.log('获取个人信息失败！')
+        }
+      })
+    },
+    // 点击确定修改按钮
+    certainClick () {
+      this.$confirm('确定修改个人信息？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.setStudentInfo()
+      }).catch(() => {
+        console.log('取消删除')
+      })
+    },
+    // 修改个人信息
+    setStudentInfo () {
+      if (this.dateTime !== '' && this.dateTime !== null) {
+        this.userForm.birth = this.$utils.formatTime(this.dateTime)
+      } else {
+        this.userForm.birth = ''
+      }
+      let data = this.userForm
+      this.$http.post('/studentApi/student/setStudentInfo', data).then(res => {
+        if (res.body.msg === 'success') {
+          this.$message.success('恭喜你！修改个人信息成功')
+          this.getStudentInfo()
+        } else {
+          console.log('未知错误！修改个人信息失败')
+        }
+      })
+    },
+    // 重置
+    setBeginInfo () {
+      this.userForm = JSON.parse(JSON.stringify(this.beginData))
+    }
+  },
+  mounted () {
+    if (sessionStorage.studentInfo) {
+      this.loginInfo = JSON.parse(sessionStorage.studentInfo)
+    }
+    this.getStudentInfo()
   }
 }
 </script>
@@ -101,5 +161,11 @@ export default {
   // background:skyblue;
   padding-top:40px;
   width:400px;
+}
+</style>
+<style lang="scss">
+.el-textarea__inner{
+  font-size:14px!important;
+  font-family:'Avenir', Helvetica, Arial, sans-serif!important;
 }
 </style>

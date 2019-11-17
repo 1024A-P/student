@@ -73,7 +73,6 @@ export default {
     this.moveTime = setTimeout(() => {
       this.moveSet = true
     }, 500)
-    console.log(123)
   },
   beforeDestroy () {
     clearTimeout(this.moveSet)
@@ -99,7 +98,7 @@ export default {
   padding:20px 40px;
   font-size:50px;
   position:absolute;
-  right:20%;
+  right:18%;
   // background:rgba(0,0,0,.6);
   color:white;
   top:5%;
@@ -128,7 +127,7 @@ export default {
     font-size:26px;
     text-align: left;
   }
-  transition: right ease-out 1.2s,background linear 1.2s;
+  transition: right ease-out 1s,background linear 1.2s;
 }
 .about-move-active{
   right:19%;

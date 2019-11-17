@@ -20,6 +20,10 @@
               </li>
               <li :class="{'isActive':activeIndex===2}" @click="jumpRoute(2)">
                 在线考试
+                <div class="exam-head-num" v-show="examNum!==0">
+                  <el-badge :value="examNum" class="item">
+                  </el-badge>
+                </div>
                 <div
                   :class="{'under-border':true,'border-active':activeIndex===2}">
                 </div>
@@ -60,14 +64,16 @@ export default {
   data () {
     return {
       // 导航样式
-      activeIndex: 1
+      activeIndex: 1,
+      examList: [],
+      examNum: 0,
+      studentInfo: 0
     }
   },
   methods: {
     // 跳转
     jumpRoute (index) {
       this.activeIndex = index
-      console.log(index)
       switch (index) {
         case 1:
           this.$toPage('/')
@@ -87,9 +93,73 @@ export default {
         default:
           break
       }
+    },
+    // 主页点击跳转
+    indexClick () {
+      this.$root.eventHandle.$on('INDEX_CLICK', to => {
+        this.jumpRoute(to)
+      })
+    },
+    // 根据路由名字默认显示active样式
+    getRouteName () {
+      let name = this.$route.name
+      switch (name) {
+        case 'Index':
+          this.activeIndex = 1
+          break
+        case 'OnlineExam':
+          this.activeIndex = 2
+          break
+        case 'StartExam':
+          this.activeIndex = 2
+          break
+        case 'SearchPoint':
+          this.activeIndex = 3
+          break
+        case 'UserInfo':
+          this.activeIndex = 4
+          break
+        case 'AboutUs':
+          this.activeIndex = 5
+          break
+        default:
+          break
+      }
+    },
+    getExamList () {
+      this.$http.post('/studentApi/student/getExamList').then(res => {
+        if (res.body.msg === 'success') {
+          this.examList = res.body.data
+          this.setExamList()
+        } else {
+          this.examList = []
+        }
+      })
+    },
+    setExamList () {
+      // console.log(this.studentId)
+      for (let i in this.examList) {
+        let stuId = JSON.parse(this.examList[i].stuId)
+        stuId.some((item) => {
+          if (item === this.studentInfo.id) {
+            this.examNum += 1
+            return true
+          }
+        })
+      }
+      // console.log(this.examNum)
     }
   },
   mounted () {
+    this.indexClick()
+    this.getRouteName()
+    if (sessionStorage.studentInfo) {
+      this.studentInfo = JSON.parse(sessionStorage.studentInfo)
+    }
+    this.getExamList()
+  },
+  beforeDestroy () {
+    this.$root.eventHandle.$off('INDEX_CLICK')
   }
 }
 </script>
@@ -187,6 +257,11 @@ export default {
       .border-active{
         width:100px;
       }
+      .exam-head-num{
+        position:absolute;
+        top:-8px;
+        right:0;
+      }
     }
     .isActive{
       color:#2daaf3;
@@ -206,5 +281,10 @@ export default {
   color:white;
   // text-align:right;
   font-size:14px;
+}
+</style>
+<style lang="scss">
+.el-badge__content{
+  border:none!important;
 }
 </style>

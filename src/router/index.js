@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import VueResource from 'vue-resource'
 import HelloWorld from '@/components/HelloWorld'
 import Index from '@V/index/index'
 import OnlineExam from '@V/onlineExam/onlineExam'
@@ -9,7 +10,7 @@ import UserInfo from '@V/userInfo/userInfo'
 import AboutUs from '@V/aboutUs/aboutUs'
 
 Vue.use(Router)
-
+Vue.use(VueResource)
 export default new Router({
   routes: [
     // 首页
