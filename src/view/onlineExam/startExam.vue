@@ -13,24 +13,61 @@
           {{secondTime}} 秒
         </div>
         <div :class="{'examing-title':true,'title-color':titleColor}" @click="test">
-          2019年第一学期JAVA期中考试
+          {{examDetail.paperName}}
         </div>
       </div>
     </div>
     <!-- 考试题目 -->
     <div class="exam-topic-list">
+      <!-- 选择题 -->
       <div class="exam-topic-type">
         <div class="exam-topic-title">
-          一、选择题
+          选择题（本大题共{{examDetail.choiceCount/examDetail.choicePoint}}小题，每小题{{examDetail.choicePoint}}分，满分{{examDetail.choiceCount}}分）
         </div>
-        <div class="exam-topic-all" v-for="(item,index) in 20" :key="index">
-          <p>{{index+1}}、0.6332的数据类型是()</p>
-          <p><el-radio v-model="radio[index]" label="1">float</el-radio></p>
-          <p><el-radio v-model="radio[index]" label="2">double</el-radio></p>
-          <p><el-radio v-model="radio[index]" label="3">Float</el-radio></p>
-          <p><el-radio v-model="radio[index]" label="4">Double</el-radio></p>
+        <div class="exam-topic-all" v-for="(item,index) in choiceList" :key="index">
+          <!-- 单选 -->
+          <div v-if="item.type==='1'">
+            <p>
+              {{index+1}}、{{item.txtName}}
+            </p>
+            <p v-for="(pitem, pindex) in item.options" :key="pindex" class="p-font">
+              <el-radio v-model="choiceAnswer[index]" :label="pindex">
+                {{$utils.turnEng(pindex)+'. '+pitem}}
+              </el-radio>
+            </p>
+          </div>
+          <!-- 多选 -->
+          <div v-if="item.type==='2'">
+            <p>
+              {{index+1}}、{{item.txtName}}<span v-show="item.type==='2'">(不定项)</span>
+            </p>
+            <el-checkbox-group v-model="choiceAnswer[index]">
+              <p style="padding-left:10px">
+                <el-checkbox :label="pindex" v-for="(pitem, pindex) in item.options" :key="pindex" style="display:block;margin-bottom:10px">
+                  {{$utils.turnEng(pindex)}}.&ensp;{{pitem}}
+                </el-checkbox>
+              </p>
+            </el-checkbox-group>
+          </div>
         </div>
       </div>
+      <!-- 判断题 -->
+      <div class="exam-topic-type">
+        <div class="exam-topic-title">
+          判断题（本大题共{{examDetail.judgeCount/examDetail.judgePoint}}小题，每小题{{examDetail.judgePoint}}分，满分{{examDetail.judgeCount}}分）
+        </div>
+        <div class="exam-topic-all" v-for="(item,index) in judgeList" :key="index">
+          <p>{{index+1}}、{{item.txtName}}</p>
+          <p class="p-font">
+            <el-radio v-model="judgeAnswer[index]" :label="1">正确</el-radio>
+            <el-radio v-model="judgeAnswer[index]" :label="2">错误</el-radio>
+          </p>
+        </div>
+      </div>
+    </div>
+    <!-- 交卷按钮 -->
+    <div class="submit-btn">
+      <el-button type="primary">确定交卷</el-button>
     </div>
   </div>
 </template>
@@ -49,11 +86,88 @@ export default {
       secondTime: '00',
       // 定时器以便于清除
       countTime: '',
-      // 示例答案
-      radio: []
+      // 考试详情
+      examDetail: {},
+      // 选择题列表
+      choiceList: [],
+      // 判断题列表
+      judgeList: [],
+      // 选择题答案
+      choiceAnswer: [],
+      // 判断题答案
+      judgeAnswer: []
     }
   },
   methods: {
+    test () {
+      console.log(this.choiceAnswer)
+      console.log(this.judgeAnswer)
+    },
+    // 获取考试详情
+    getExamDetail (id) {
+      let data = {
+        id: id
+      }
+      this.$http.post('/studentApi/student/getExamDetail', data).then(res => {
+        if (res.body.msg === 'success') {
+          // 获取选择题id
+          let choiceId = res.body.data[0].choiceId
+          if (choiceId !== '[]') {
+            this.getChoiceList(choiceId)
+          }
+          // 获取判断题id
+          let judgeId = res.body.data[0].judgeId
+          if (judgeId !== '[]') {
+            this.getJudgeList(judgeId)
+          }
+          this.examDetail = res.body.data[0]
+          this.$alert('你已进入考试，请在规定时间内完成该考试！切勿关闭浏览器或者离开当前页面', '开始考试', {
+            confirmButtonText: '确定',
+            type: 'warning',
+            callback: action => {
+              this.startCountTime(this.examDetail.wastedTime)
+            }
+          })
+        } else {
+          console.log('未知错误！获取考试详情错误')
+        }
+      })
+    },
+    // 获取选择题列表
+    getChoiceList (arr) {
+      let data = arr
+      this.$http.post('/studentApi/student/getChoiceList', data).then(res => {
+        if (res.body.msg === 'success') {
+          this.choiceList = res.body.data
+          for (let i in this.choiceList) {
+            this.choiceList[i].options = this.handleOptions(this.choiceList[i].options)
+            if (this.choiceList[i].type === '1') {
+              this.choiceAnswer[i] = ''
+            } else {
+              this.choiceAnswer[i] = []
+            }
+          }
+        } else {
+          console.log('未知错误！获取选择题列表失败')
+        }
+      })
+    },
+    // 获取判断题列表
+    getJudgeList (arr) {
+      let data = arr
+      this.$http.post('/studentApi/student/getJudgeList', data).then(res => {
+        if (res.body.msg === 'success') {
+          this.judgeList = res.body.data
+        } else {
+          console.log('未知错误！获取选择题列表失败')
+        }
+      })
+    },
+    // 处理选项中单引号为双引号
+    handleOptions (options) {
+      let result = JSON.parse(options.replace(/'/g, '"'))
+      return result
+    },
     // 计时器置顶
     handleTop () {
       // console.log(document.documentElement.scrollTop)
@@ -100,8 +214,8 @@ export default {
       }
     },
     // 获取考试时间并作倒计时处理
-    getExamData () {
-      let sumTime = 120 * 60
+    startCountTime (wastedTime) {
+      let sumTime = wastedTime * 60
       this.formatSeconds(sumTime)
       this.countTime = setInterval(() => {
         sumTime = sumTime - 1
@@ -113,20 +227,14 @@ export default {
           this.secondTime = '00'
         }
       }, 1000)
-    },
-    // 测试选择
-    test () {
-      console.log(this.radio)
     }
   },
   mounted () {
     document.onscroll = () => {
       this.handleTop()
     }
-    this.getExamData()
-    this.radio = new Array(20)
-    this.radio.fill('')
-    // console.log(this.radio)
+    let id = this.$route.query.id * 1
+    this.getExamDetail(id)
   },
   beforeDestroy () {
     clearInterval(this.countTime)
@@ -137,6 +245,7 @@ export default {
 .start-exam-main{
   width:100%;
   min-height:600px;
+  padding-bottom:40px;
   // background:skyblue;
 }
 .exam-time{
@@ -149,7 +258,7 @@ export default {
   transition:top ease 1s,background ease 1s;
   // text-align: left;
   overflow:hidden;
-  z-index:2400;
+  z-index:200;
 }
 // 置顶
 .make-top{
@@ -196,22 +305,33 @@ export default {
   width:1200px;
   // height:500px;
   // background:skyblue;
-  margin:80px auto;
+  margin:80px auto 0 auto;
   padding:20px 0;
 }
 .exam-topic-type{
   width:100%;
   // background:orange;
   text-align:left;
+  margin-bottom:30px;
 }
 .exam-topic-title{
   font-size:18px;
   margin-bottom:20px;
+  font-weight: bold;
 }
 .exam-topic-all{
   font-size:16px;
   p{
     margin:10px;
+    font-size:14px;
   }
+}
+.p-font{
+  padding-left:10px;
+}
+.submit-btn{
+  width:1200px;
+  margin:0 auto;
+  text-align: left;
 }
 </style>
