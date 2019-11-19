@@ -12,7 +12,7 @@
         <div class="compute-time">
           {{secondTime}} 秒
         </div>
-        <div :class="{'examing-title':true,'title-color':titleColor}" @click="test">
+        <div :class="{'examing-title':true,'title-color':titleColor}">
           {{examDetail.paperName}}
         </div>
       </div>
@@ -67,7 +67,7 @@
     </div>
     <!-- 交卷按钮 -->
     <div class="submit-btn">
-      <el-button type="primary">确定交卷</el-button>
+      <el-button type="primary" @click="clickSubmit">确定交卷</el-button>
     </div>
   </div>
 </template>
@@ -95,14 +95,25 @@ export default {
       // 选择题答案
       choiceAnswer: [],
       // 判断题答案
-      judgeAnswer: []
+      judgeAnswer: [],
+      // 交卷或者关闭页面需要提交的数据
+      uploadAnswer: {
+        stuId: 0,
+        examId: 0,
+        makerId: 0,
+        wastedTime: 0,
+        maker: '',
+        stuName: '',
+        paperName: '',
+        status: 0,
+        finishDate: '',
+        choiceAnswer: [],
+        judgeAnswer: [],
+        otherAnswer: ''
+      }
     }
   },
   methods: {
-    test () {
-      console.log(this.choiceAnswer)
-      console.log(this.judgeAnswer)
-    },
     // 获取考试详情
     getExamDetail (id) {
       let data = {
@@ -222,19 +233,61 @@ export default {
         if (sumTime > 0) {
           this.formatSeconds(sumTime)
         } else {
-          this.$message.success('考试时间到')
+          this.submitAnswer()
           clearInterval(this.countTime)
           this.secondTime = '00'
         }
+        this.uploadAnswer.wastedTime = Math.ceil(sumTime / 60)
       }, 1000)
+    },
+    // 点击交卷
+    clickSubmit () {
+      this.$confirm('确定提交试卷', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'success'
+      }).then(() => {
+        this.submitAnswer()
+      }).catch(() => {
+        console.log('暂不交卷')
+      })
+    },
+    // 确定交卷
+    submitAnswer () {
+      this.uploadAnswer.stuId = this.studentInfo.id
+      this.uploadAnswer.stuName = this.studentInfo.name
+      this.uploadAnswer.examId = this.examDetail.id
+      this.uploadAnswer.paperName = this.examDetail.paperName
+      this.uploadAnswer.makerId = this.examDetail.makerId
+      this.uploadAnswer.maker = this.examDetail.maker
+      this.uploadAnswer.finishDate = this.$utils.getFormatDate()
+      this.uploadAnswer.choiceAnswer = this.choiceAnswer
+      this.uploadAnswer.judgeAnswer = this.judgeAnswer
+      this.uploadAnswer.otherAnswer = ''
+      this.uploadAnswer.status = 2
+      let data = this.uploadAnswer
+      this.$http.post('/studentApi/student/uploadAnswer', data).then(res => {
+        if (res.body.msg === 'success') {
+          this.$message.success('已提交试卷，考试结束')
+          this.$toPage('/onlineExam')
+        } else {
+          console.log('发生未知错误！提交试卷失败！')
+        }
+      })
     }
   },
   mounted () {
+    if (sessionStorage.studentInfo) {
+      this.studentInfo = JSON.parse(sessionStorage.studentInfo)
+    }
     document.onscroll = () => {
       this.handleTop()
     }
     let id = this.$route.query.id * 1
     this.getExamDetail(id)
+    window.onbeforeunload = event => {
+      event.returnValue = ''
+    }
   },
   beforeDestroy () {
     clearInterval(this.countTime)

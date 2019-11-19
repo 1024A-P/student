@@ -15,7 +15,7 @@
           <template slot-scope="so">
             <span v-show="so.row.status==='1'">尚未开考</span>
             <el-button v-show="so.row.status==='2'" size="mini" type="primary" @click="startExam(so.row.id)">开始</el-button>
-            <span v-show="so.row.status==='3'">已结束</span>
+            <span v-show="so.row.status==='3'">已考完</span>
           </template>
         </el-table-column>
       </wj-table>
@@ -36,7 +36,9 @@ export default {
       },
       exList: [],
       examAllList: [],
-      studentInfo: 0
+      studentInfo: {},
+      // 存储所有考试id
+      examIdAll: []
     }
   },
   methods: {
@@ -53,12 +55,36 @@ export default {
         console.log('取消考试')
       })
     },
+    // 获取考生考试状态
+    getExamStatus () {
+      let data = {
+        stuId: this.studentInfo.id,
+        examId: this.examIdAll
+      }
+      this.$http.post('/studentApi/student/getExamStatus', data).then(res => {
+        if (res.body.msg === 'success') {
+          let ob = res.body.data
+          // 根据是否存在该考生对应的考试答案，有的话就说明已经考完，则让列表数据中的 status 设为 3
+          for (let i in this.examAllList) {
+            for (let j in ob) {
+              if (this.examAllList[i].id === ob[j].examId) {
+                this.examAllList[i].status = '3'
+              }
+            }
+          }
+        } else {
+          console.log('未知错误！获取学生考试状态')
+        }
+      })
+    },
+    // 获取考试列表
     getExamList () {
       this.examList.isloading = true
       this.$http.post('/studentApi/student/getExamList').then(res => {
         if (res.body.msg === 'success') {
           this.examAllList = res.body.data
           this.setExamList()
+          this.getExamStatus()
           this.examList.isloading = false
         } else {
           this.examAllList = []
@@ -76,6 +102,7 @@ export default {
             return true
           }
         })
+        this.examIdAll.push(this.examAllList[i].id)
       }
       // 处理数据集
       this.examList.list = this.$utils.getTableData(this.exList, this.examList.page, this.examList.size)

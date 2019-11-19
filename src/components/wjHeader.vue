@@ -66,6 +66,7 @@ export default {
       // 导航样式
       activeIndex: 1,
       examList: [],
+      examAllId: [],
       examNum: 0,
       studentInfo: 0
     }
@@ -126,8 +127,30 @@ export default {
           break
       }
     },
+    // 获取答案的考试状态
+    getExamStatus () {
+      let data = {
+        stuId: this.studentInfo.id,
+        examId: this.examAllId
+      }
+      this.$http.post('/studentApi/student/getExamStatus', data).then(res => {
+        if (res.body.msg === 'success') {
+          let ob = res.body.data
+          // 根据是否存在该考生对应的考试答案，有的话就说明已经考完，则让列表数据中的 status 设为 3
+          this.examNum = this.examNum - ob.length
+          if (this.examNum === 0) {
+            this.introContent = this.studentInfo.name + '同学，你今天没有考试哦！'
+          } else {
+            this.introContent = this.studentInfo.name + '同学，你今天有' + this.examNum + '场考试，记得考试哦！'
+          }
+        } else {
+          console.log('未知错误！获取学生考试状态')
+        }
+      })
+    },
+    // 获取所有考试的id和stuId
     getExamList () {
-      this.$http.post('/studentApi/student/getExamList').then(res => {
+      this.$http.post('/studentApi/student/getAllExamId').then(res => {
         if (res.body.msg === 'success') {
           this.examList = res.body.data
           this.setExamList()
@@ -142,12 +165,13 @@ export default {
         let stuId = JSON.parse(this.examList[i].stuId)
         stuId.some((item) => {
           if (item === this.studentInfo.id) {
+            this.examAllId.push(this.examList[i].id)
             this.examNum += 1
             return true
           }
         })
       }
-      // console.log(this.examNum)
+      this.getExamStatus()
     }
   },
   mounted () {
