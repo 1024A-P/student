@@ -269,7 +269,6 @@ export default {
       this.uploadAnswer.choiceAnswer = this.choiceAnswer
       this.uploadAnswer.judgeAnswer = this.judgeAnswer
       this.uploadAnswer.otherAnswer = ''
-      this.uploadAnswer.status = 2
       this.uploadAnswer.studentId = this.studentInfo.stuId
       this.uploadAnswer.paperId = this.examDetail.paperId
       let data = this.uploadAnswer
