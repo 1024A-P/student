@@ -2,18 +2,22 @@
   <div class="show-points">
     <div class="table-box">
       <wj-table :tableData="pointsData">
-        <el-table-column prop="examId" label="试卷号" align="center"></el-table-column>
-        <el-table-column prop="name" label="试卷名" align="center"></el-table-column>
+        <el-table-column prop="paperId" label="试卷号" align="center"></el-table-column>
+        <el-table-column prop="paperName" label="试卷名" align="center"></el-table-column>
         <el-table-column prop="maker" label="出卷人" align="center"></el-table-column>
         <el-table-column label="答题耗时" align="center">
           <template slot-scope="scoped">
-            {{scoped.row.wasteTime+'分钟'}}
+            {{scoped.row.wastedTime+'分钟'}}
           </template>
         </el-table-column>
-        <el-table-column prop="points" label="考试分数" align="center"></el-table-column>
+        <el-table-column label="考试分数" align="center">
+          <template slot-scope="scoped">
+            {{scoped.row.countPoint+'分'}}
+          </template>
+        </el-table-column>
         <el-table-column label="成绩统计" align="center">
           <template slot-scope="scoped">
-            <div v-html="handlePoints(scoped.row.points)"></div>
+            <div v-html="handlePoints(scoped.row.countPoint)"></div>
           </template>
         </el-table-column>
       </wj-table>
@@ -25,84 +29,15 @@ export default {
   name: 'SearchPoint',
   data () {
     return {
+      studentInfo: {},
       pointsData: {
         isloading: false,
         page: 1,
-        total: 40,
+        total: 0,
         size: 10,
-        list: [
-          {
-            examId: 'e1024',
-            name: 'JAVA期中考试',
-            maker: '林小夕老师',
-            wasteTime: 98,
-            points: 80
-          },
-          {
-            examId: 'e1023',
-            name: 'C#期中考试',
-            maker: '林小夕老师',
-            wasteTime: 91,
-            points: 73
-          },
-          {
-            examId: 'e1028',
-            name: 'C++期中考试',
-            maker: '林小夕老师',
-            wasteTime: 14,
-            points: 81
-          },
-          {
-            examId: 'e1024',
-            name: 'JAVA期中考试',
-            maker: '林小夕老师',
-            wasteTime: 55,
-            points: 62
-          },
-          {
-            examId: 'e1023',
-            name: 'C#期中考试',
-            maker: '林小夕老师',
-            wasteTime: 62,
-            points: 93
-          },
-          {
-            examId: 'e1028',
-            name: 'C++期中考试',
-            maker: '林小夕老师',
-            wasteTime: 87,
-            points: 41
-          },
-          {
-            examId: 'e1024',
-            name: 'JAVA期中考试',
-            maker: '林小夕老师',
-            wasteTime: 102,
-            points: 92
-          },
-          {
-            examId: 'e1023',
-            name: 'C#期中考试',
-            maker: '林小夕老师',
-            wasteTime: 75,
-            points: 71
-          },
-          {
-            examId: 'e1028',
-            name: 'C++期中考试',
-            maker: '林小夕老师',
-            wasteTime: 46,
-            points: 53
-          },
-          {
-            examId: 'e1024',
-            name: 'JAVA期中考试',
-            maker: '林小夕老师',
-            wasteTime: 68,
-            points: 99
-          }
-        ]
-      }
+        list: []
+      },
+      pointAllData: []
     }
   },
   methods: {
@@ -119,7 +54,38 @@ export default {
         result = '<span style="color:#67C23A">优秀</span>'
       }
       return result
+    },
+    // 获取该考生成绩列表
+    getStudentPoint () {
+      this.pointsData.isloading = true
+      let data = {
+        stuId: this.studentInfo.id
+      }
+      this.$http.post('/studentApi/student/getStudentPoint', data).then(res => {
+        if (res.body.msg === 'success') {
+          this.pointAllData = res.body.data
+          this.pointsData.isloading = false
+          this.pointsData.total = res.body.data.length
+          this.pointsData.list = this.$utils.getTableData(this.pointAllData, this.pointsData.page, this.pointsData.size)
+        } else {
+          this.pointsData.isloading = false
+          this.pointsData.total = 0
+          this.pointsData.list = []
+          this.pointAllData = []
+        }
+      })
+    },
+    // 列表分页
+    pageAction (page) {
+      this.pointsData.page = page
+      this.pointsData.list = this.$utils.getTableData(this.pointAllData, this.pointsData.page, this.pointsData.size)
     }
+  },
+  mounted () {
+    if (sessionStorage.studentInfo) {
+      this.studentInfo = JSON.parse(sessionStorage.studentInfo)
+    }
+    this.getStudentPoint()
   }
 }
 </script>
