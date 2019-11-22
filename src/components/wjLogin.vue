@@ -39,7 +39,8 @@ export default {
       // 存储session信息
       studentInfo: {
         id: '',
-        name: ''
+        name: '',
+        stuId: ''
       },
       // 点击登录执行loading图案
       isloading: false
@@ -54,6 +55,7 @@ export default {
         if (res.body.msg === 'success') {
           this.studentInfo.id = res.body.data[0].id
           this.studentInfo.name = res.body.data[0].name
+          this.studentInfo.stuId = res.body.data[0].stuId
           this.addUserSession()
           location.reload()
           // console.log(this.studentInfo)

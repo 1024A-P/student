@@ -237,7 +237,7 @@ export default {
           clearInterval(this.countTime)
           this.secondTime = '00'
         }
-        this.uploadAnswer.wastedTime = Math.ceil(sumTime / 60)
+        this.uploadAnswer.wastedTime = wastedTime - Math.ceil(sumTime / 60)
       }, 1000)
     },
     // 点击交卷
@@ -254,6 +254,11 @@ export default {
     },
     // 确定交卷
     submitAnswer () {
+      for (let i in this.choiceAnswer) {
+        if (typeof (this.choiceAnswer[i]) === 'object') {
+          this.choiceAnswer[i] = this.choiceAnswer[i].sort()
+        }
+      }
       this.uploadAnswer.stuId = this.studentInfo.id
       this.uploadAnswer.stuName = this.studentInfo.name
       this.uploadAnswer.examId = this.examDetail.id
@@ -265,6 +270,8 @@ export default {
       this.uploadAnswer.judgeAnswer = this.judgeAnswer
       this.uploadAnswer.otherAnswer = ''
       this.uploadAnswer.status = 2
+      this.uploadAnswer.studentId = this.studentInfo.stuId
+      this.uploadAnswer.paperId = this.examDetail.paperId
       let data = this.uploadAnswer
       this.$http.post('/studentApi/student/uploadAnswer', data).then(res => {
         if (res.body.msg === 'success') {
