@@ -40,17 +40,17 @@ export default {
         examId: this.examAllId
       }
       this.$http.post('/studentApi/student/getExamStatus', data).then(res => {
+        let ob = res.body.data
+        // 根据是否存在该考生对应的考试答案，有的话就说明已经考完，则数量就减去返回的数组长度
+        this.examNum = this.examNum - ob.length
         if (res.body.msg === 'success') {
-          let ob = res.body.data
-          // 根据是否存在该考生对应的考试答案，有的话就说明已经考完，则数量就减去返回的数组长度
-          this.examNum = this.examNum - ob.length
           if (this.examNum === 0) {
             this.introContent = this.studentInfo.name + '同学，你今天没有考试哦！'
           } else {
             this.introContent = this.studentInfo.name + '同学，你今天有' + this.examNum + '场考试，记得考试哦！'
           }
         } else {
-          console.log('未知错误！获取学生考试状态')
+          this.introContent = this.studentInfo.name + '同学，你今天有' + this.examNum + '场考试，记得考试哦！'
         }
       })
     },
