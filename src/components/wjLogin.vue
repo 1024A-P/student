@@ -158,51 +158,51 @@ export default {
 <style lang="scss">
 // 消息样式 STR
 .el-message--warning{
-  background-color: #fef8e8;
-  border-color: #F4C333;
+  background-color: #fef8e8!important;
+  border-color: #F4C333!important;
   .el-icon-warning{
-    color: #F4C333;
+    color: #F4C333!important;
   }
   .el-message__content{
-    color: #333333;
+    color: #333333!important;
   }
 }
 
 .el-message--success{
-  background-color: #f1f7f5;
-  border-color: #61C09F;
+  background-color: #f1f7f5!important;
+  border-color: #61C09F!important;
   .el-icon-success{
-    color: #61C09F;
+    color: #61C09F!important;
   }
   .el-message__content{
-    color: #333333;
+    color: #333333!important;
   }
 }
 
 .el-message--error{
-  background-color: #ffeeee;
-  border-color: #FA5555;
+  background-color: #ffeeee!important;
+  border-color: #FA5555!important;
   .el-icon-error{
-    color: #FA5555;
+    color: #FA5555!important;
   }
   .el-message__content{
-    color: #333333;
+    color: #333333!important;
   }
 }
 
 .el-message--info{
-  background-color: #fff;
-  border-color: #C0C4CC;
+  background-color: #fff!important;
+  border-color: #C0C4CC!important;
   .el-icon-info{
-    color: #C0C4CC;
+    color: #C0C4CC!important;
   }
   .el-message__content{
-    color: #333333;
+    color: #333333!important;
   }
 }
 .el-message{
-  min-width: auto;
-  padding: 15px 20px;
+  min-width: auto!important;
+  padding: 15px 20px!important;
 }
 // 消息样式 END
 </style>

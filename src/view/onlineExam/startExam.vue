@@ -105,7 +105,7 @@ export default {
         maker: '',
         stuName: '',
         paperName: '',
-        status: 0,
+        status: 1,
         finishDate: '',
         choiceAnswer: [],
         judgeAnswer: [],
