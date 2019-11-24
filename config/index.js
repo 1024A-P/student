@@ -12,7 +12,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/studentApi': {
-        target: 'http://localhost:1002', // 目标接口域名
+        target: 'http://123.56.221.10:1002', // 目标接口域名
         changeOrigin: true // 允许跨域
       }
     },
